@@ -1,0 +1,270 @@
+\documentclass[final]{beamer} % use beamer
+\usepackage[orientation=landscape,size=a0,scale=1.2]{beamerposter} % beamer in poster size
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\newcommand{\nn}{\nonumber}
+\renewcommand{\phi}{\varphi}
+%\newcommand{\thispdfpagelabel}{}
+\newcommand{\comment}[1]{}
+\newcommand{\field}[1]{\mathbb{#1}} % requires amsfonts
+\newcommand{\pd}[2]{\frac{\partial#1}{\partial#2}}
+\newcommand{\script}[1]{\mathcal{#1}} % requires amsfonts
+\newcommand{\am}{\bar{\bar{\alpha}}}
+\usetheme{posterosu}            % our poster style
+
+\title{A polynomial chaos-based method for the continuous spectrum biphasic poroviscoelastic model of articular cartilage}
+\author[*baylesj@onid.orst.edu]{Jordan Bayles*, Prof. Nathan Gibson}
+\institute[Department of Mathematics, Oregon State University]{Department of Mathematics, Oregon State University}
+%\date{IMA 2011 Workshop: Large-scale Inverse Problems and Quantification of Uncertainty}
+
+\begin{document}
+
+\begin{frame}[t]
+
+\begin{columns}[t]
+\begin{column}{0.28\paperwidth}
+
+\begin{alertblock}{Abstract}
+We present a numerical method for solving the linear biphasic poroviscoelastic
+model of articular cartilage, specifically by 
+%reducing the solution from the partial differential equation 
+replacing the convolution representing history effects with an
+%governing this model to a simpler, 
+auxiliary ODE
+to which generalized Polynomial Chaos (gPC) is applied to account for
+a continuous spectrum of relaxation times.
+The
+resulting system of 
+ODEs is solved using a finite difference method of the same order of
+accuracy as the method for the PDE. The results of this solution
+are then compared to existing literature to determine overall accuracy and
+the previous, Gauss-Legendre solution, is recovered as a special case of gPC.
+
+\end{alertblock}
+This is a URISC funded undergraduate research project with an emphasis
+on reformulation of the model and implementation of
+gPC, and can be considered as an extension of the work done in \cite{stuebner},
+\cite{schugart} as well as an application of new methods in electromagnetics. 
+Note that this project is still in progress.
+
+\begin{block}{Application}
+The ultimate purpose of this project is to improve the simplicity, efficiency, and
+utility of the BPVE model of articular cartilage. Upon doing so, this will make further
+studies into the behaviors of cartilage better informed, and add value to not only
+mathematical literature but medical as well, furthering joint research.
+\end{block}
+
+\begin{block}{Primary Problem}
+We desire a solution $u$, to the linear biphasic viscoporoelastic (BPVE) model
+of articular cartilage
+\[
+\frac{1}{\kappa} \pd{u}{t} = \pd{\sigma}{z},\; 0<z<h,\; 0<t<t_f.
+\]
+Where the stress, $\sigma$, is defined to be
+\[
+\sigma(z,t) = H_A \int_{-\infty}^{t} G(t-s)  \pd{\epsilon}{s} ds.
+\]
+The quantity $\epsilon(z,t) = \pd{u}{z}$ is the strain. Substituting
+the definition of 
+$\epsilon(z,t)$ into the original model and rewriting in terms of the
+velocity $v=\pd{u}{t}$, then
+\[
+ v = \kappa H_A \int_{-\infty}^{t}G(t-s) \pd{^2 v}{z^2} (z, s) ds.
+\]
+where typically $G(t) = G_{\infty} + G_d \, g(t;\tau)$ and 
+\[
+g(t;\tau)=\frac{e^{-t/\tau}}{\tau}.
+\]
+This method was implemented by \cite{stuebner,schugart}, however we
+wish to employ an auxiliary ordinary differential equation (ODE)
+approach. To that end we define $Q(z,t) := G_d \, g(t; \tau) *
+v_{zz}$. Taking a time derivative on both sides gives
+\[
+\pd{v}{t} = \kappa H_A G_{\infty} \pd{^2 v}{z^2} + \kappa H_A \dot{Q}.
+\]
+We further introduce a new variable $P$ such that $\pd{^2 P}{z^2} = Q$ and
+\[
+P(z, t) := G_d \, g(t; \tau) * v(z,t).
+\]
+Note that $P$ satisfies the auxiliary ODE
+\[
+\tau\dot{P} +P = G_d v.
+\]
+After substituting $\dot{Q}=\pd{^2 \dot{P}}{z^2}$, the original PDE becomes
+\[
+\pd{v}{t} = \kappa H_A \left(G_{\infty} + \frac{G_d}{\tau}\right) \pd{v}{z} - 
+\frac{\kappa H_A}{\tau} \pd{^2 P}{z^2}
+\]
+\end{block}
+
+\end{column}
+\begin{column}{0.28\paperwidth}
+
+\begin{alertblock}{Development of New Method}
+The above assumes a single relaxation time parameter $\tau$. In the
+presence of a continuous spectrum of relaxation times, one may redefine the kernel in
+the convolution integral to be
+\[
+G(t) = G_{\infty} + G_d \, \int_{\tau_1}^{\tau_2} \frac{e^{-t/\tau}}{\tau} dF(\tau)
+\]
+where $F(\tau)$ is the probability density of relaxation times on the interval $[\tau_1,
+\tau_2]$. In previous efforts, this kernel was approximated via Gaussian quadrature
+in order to produce $G^Q (t)$ with arbitrary order of accuracy. Here we propose to use
+the approach defined in \cite{gibson}, where we explicitly model the relaxation as a
+random variable. Then polynomial chaos is applied to the resulting random solution.
+\end{alertblock}
+
+\begin{block}{Polynomial Chaos}
+We use polynomial chaos expansions for the function $\script{P}$, defined analogously
+to $P$ as $\script{P} (z, t) := G_d g(t; \tau) * v$ and satisfying the ODE
+\begin{equation}
+\tau \dot{\script{P}} + \script{P} = G_d v \;\rm{with}\; \tau \sim F.
+\end{equation}
+Applying gPC, we can rewrite as $\tau = r\xi+m$, where $\xi \in [-1,1]$.
+and approximate the solution 
+\begin{eqnarray}
+\script{P}(t,z,\xi) & \approx & \sum_{j=0}^{p} \alpha_j (t,z) \phi_j(\xi)
+\label{eqn2}
+\end{eqnarray}
+where the expansion coefficients satisfy the following tridiagonal
+system of ODEs
+\begin{equation} \label{eqn:alpha_m}
+A \dot{\vec{\alpha}} + \vec{\alpha} = \vec{f}.
+\end{equation} 
+%\[(rM +mI) \dot{\vec{\alpha}} + \vec{\alpha} = G_d v(t,z) \hat{e}_1 \]
+The PDE depends on the quantity $\field{E}_F \left[\script{P}\right] = \alpha_0 (t,z)$.
+The $\phi_j$'s above are (for example) Jacobi polynomials in $\xi$,
+which are orthogonal on $[-1,1]$ with respect to a weight function
+proportional to the distribution $F$, e.g.,
+\[W(\xi) = (1-\xi)^a (1+\xi)^b.\]
+\end{block}
+
+\begin{block}{System of Equations }
+Equation $\ref{eqn:alpha_m}$ represents a system of equations expressed in matrix form,
+where
+\[
+A := (rM + mI),\;
+\]
+\[
+\vec{f} := \left[\begin{array}{c}
+G_d v(t,z) \hat{e}_1\\
+0\\
+\vdots\\
+0
+\end{array}\right],\;
+\]
+\[
+M := \left[\begin{array}{ccccc}
+b_0 & a_1 & 0 & \dots & 0 \\
+c_0 & b_1 & \ddots &  & \vdots \\
+0 & c_1 & \ddots & a_{Q-1} & 0 \\
+\vdots &  & \ddots & b_{p-1} & a_p \\
+0 & \dots & 0 & c_{p-1} & b_p
+\end{array}\right].
+\]
+and $a_i, b_i, c_i$ are the recursion coefficients. Note that the deterministic
+value $\vec{f}$ forces the system and is dependent on $v(t,z)$, which is itself
+dependent on the expected value $P = \field{E}\left[\script{P}\right]$, which can
+be approximated by $\alpha_0$.
+\end{block}
+
+\begin{block}{Alternative to Numerical Integration}
+\begin{itemize}
+\item
+Direct approach to approximating solutions to the ODEs for $\script{P}$ 
+is to compute inner products,
+$\left<\phi_i,\phi_j\right>_W$, with numerical integration (quadrature)
+\item
+Numerical integration needed at each time $t$ and can be expensive
+\item
+Instead, we use an efficient method for approximating $\alpha_j$ that 
+avoids computing the integrals directly in favor of a finite difference approach.
+\end{itemize}
+\end{block}
+\end{column}
+
+\begin{column}{0.28\paperwidth}
+%\begin{block}{Assumptions*}
+%
+%\begin{eqnarray}
+%g(t,\xi) &=& \sum_{k=0}^{\infty} G_k(t) \xi^k.
+%\label{eqn5}
+%\end{eqnarray}
+%Approximating modes in (\ref{eqn4}) begins with a truncation of the series in (\ref{eqn5})
+%\begin{eqnarray}
+%g^Q(t,\xi) := \sum_{k=0}^{Q} G_k(t) \xi^k.
+%\label{eqn6}
+%\end{eqnarray}
+%*Taylor expansions and general polynomial bases can be handled by converting to the form $(\ref{eqn5}$) or
+%by using nested polynomial representations.
+%\end{block}
+\begin{block}{Iterative method for determining $\alpha_j$}
+Using matrix notation:
+\[
+\alpha_j(t_n, z_i) = [\bar{\bar{\alpha}}_{ij}^n] = 
+\left[ \begin{array}{c c c c}
+\alpha_0 (z_0) & \alpha_1^n(z_0) & \cdots & \alpha_p^n (z_0)\\
+\alpha_0 (z_1) & \cdots          &        &                 \\
+\vdots          &                &        &                 \\
+\alpha_0 (z_M)  &                &        &                 \\
+\end{array}\right] =
+\bar{\bar{\alpha}}^n
+\]
+
+Using finite difference approximation, \ref{eqn:alpha_m} can be written as 
+\begin{equation}
+(rM + mI) \frac{(\am^{n+1})^T - (\am^n)^T}{\Delta t} + (\am^{n+\theta})^T =
+G_d \hat{e}_1 (\vec{v}^{n+\theta})^T
+\end{equation}
+Let
+\[ \begin{array}{c}
+B_+ := rM + mI + \Delta t \theta I \\
+B_- := rM + mI - \Delta t (1-\theta) I
+\end{array} \]
+Then this simply becomes
+\begin{equation}
+B_+ (\am^{n+1})^T = B_- (\am^n)^T + G_d \hat{e}_1 (\vec{v}^{n+\theta})^T \Delta t
+\end{equation}
+Solving for $\am^{n+1}$ this becomes
+\begin{equation}
+\am^{n+1} = \am^n B_-^T B_+^T + G_d \vec{v}^{n+\theta} \hat{e}_1^T B_+^{-T} \Delta t
+\end{equation}
+However, we are ultimately interested in $P$, not $\alpha$, thus we extract the first column from the $\alpha$ matrix.
+\end{block}
+
+\begin{block}{Current, Future Work}
+\begin{itemize}
+\item
+Finish MATLAB implementation of BPVE model, gPC application numerical method.
+\item
+Compare results of numerical method to those utilized in \cite{stuebner}, \cite{schugart}.
+\item
+Determine error bounds in order to find the truncation level of the orthogonal
+polynomials used in gPC in order to reach and surpass the accuracy of existing methods.
+\item
+Beginning with the uniform distribution, apply various probability densities in order
+to determine the best fit for the relaxation time and numerical practicality.
+\end{itemize}
+\end{block}
+
+\begin{block}{References}
+\begin{thebibliography}{7}
+
+{\small
+\bibitem{stuebner}[2010] M. Stuebner and M. A. Haider, A fast quadrature-based numerical method for the continuous spectrum biphasic poroviscoelastic model of articular cartilage, {\em Journal of Biomechanics}, Vol. 43, pp. 1835-1839
+
+\bibitem{schugart}[2004] M. A. Haider and R. C. Schugart, A numerical method for the continuous spectrum biphasic poroviscoelastic model of articular cartilage, {\em Journal of Biomechanics}, Vol. 39, No. 1, pp. 177-183.
+
+\bibitem{gibson}[2005] H. T. Banks, N. L. Gibson, and W. P. Winfree, "Gap detection with electromagnetic terahertz signals", Nonlinear Analysis: Real World Applications 6, no. 2, 381-416.
+}
+\end{thebibliography}
+\end{block}
+
+\begin{block}{Acknowledgements}
+This work was funded by a grant from OSU's Undergraduate Research, Innovation, Scholarship \& Creativity (URISC): Start program.
+\end{block}
+\end{column}
+\end{columns}
+
+\end{frame}
+\end{document}

@@ -1,0 +1,195 @@
+\documentclass[12pt,letterpaper]{article}
+
+\author{}
+\date{}
+\title{}
+
+%Usepackage declarations
+\usepackage[left=1in,top=1in,right=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{tgpagella}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{sectsty}
+\usepackage{slashed}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{latexsym}
+% Include for use of images
+\usepackage{graphicx}
+% Include for use of [H] placement specifier
+\usepackage{float}
+% Include for use of \toprule, \midrule, \bottomrule in tabular env.
+\usepackage{booktabs}
+%Package usages
+\sectionfont{\normalsize}
+\subsectionfont{\small}
+
+%New commands
+\newcommand{\comment}[1]{}
+\newcommand{\field}[1]{\mathbb{#1}} % requires amsfonts
+\newcommand{\pd}[2]{\frac{\partial#1}{\partial#2}}
+
+% No indents
+\setlength{\parindent}{0cm}
+\begin{document}
+\begin{flushright}
+Jordan Bayles
+\end{flushright}
+
+\begin{center}
+Application of Auxiliary ODE to BVPE model
+\end{center}
+
+First, we begin with the BVPE model, which can be reduced to
+\begin{equation}
+\frac{1}{\kappa} \frac{\delta u}{\delta t} = \frac{\delta \sigma}{\delta z}, \quad 0 < z < h, \; 0 < t < t_f
+\end{equation}
+Where $\sigma = \sigma_{zz}$ is modeled well by
+\begin{equation}
+\sigma (z, t) = H_A \int_0^t G(t-s) \frac{d\epsilon}{ds} (z,s) ds = H_A G * \frac{d\epsilon}{dt} 
+\end{equation}
+where
+\begin{equation}
+G(t) = 1 + c \int_{\tau_1}^{\tau_2} g(t, \tau) dF( \tau ) = G_{\infty} + G_d \field{E}_F [g] 
+\end{equation}
+In other words, $G_{\infty} \equiv 1, G_d \equiv c$ with
+\begin{equation}
+g (t, \tau) = \frac{ e^{-t/\tau}}{\tau}, \quad \tau = \textnormal{ "relaxation time"}
+\end{equation}
+Note that
+\begin{equation}
+\hat{g} = \frac{1}{ 1 + i\omega\tau} 
+\end{equation}
+Then, $\sigma(z,t)$ can be expressed as
+\begin{equation}
+\sigma(z, t) = H_A G_{\infty} \left. \epsilon \right|_0^t + H_A P 
+\end{equation}
+where $P := G_d \field{E}_F [g] * d\epsilon/dt$, giving
+\begin{equation}
+\hat{P} = G_d \field{E}_F [ \hat{g} ] \cdot \frac{d\hat{\epsilon}}{dt} = \underbrace{\int_{\tau_1}^{\tau_2} \frac{G_d}{1 + i\omega\tau} d F(\tau)}_{``\hat{G}_r(\omega)"} \cdot \frac{d\hat{\epsilon}}{dt} 
+\label{eqn:phatdef}
+\end{equation}
+``Can show that'' $P = \field{E}_F [ \mathcal{P} ]$ where $\mathcal{P}$ satisfies an (auxiliary) ODE:
+\begin{equation}
+\tau \dot{\mathcal{P}} + \mathcal{P} = G_d \frac{d\epsilon}{dt},\textnormal{ with } \tau \sim F(\tau) = U[m-r, m+r] = r\xi + m, \; \xi \sim U[-1,1].
+\label{eqn:spdef} 
+\end{equation}
+
+ Which is similar in nature to the stochastic polarization (Banks and Gibson) defined as
+\begin{equation}
+\mathcal{P}(t,z) = \int_{\tau_a}^{\tau_b} P(t,z; \tau) d F(\tau)
+\label{eqn:stopol}
+\end{equation}
+Note the similarity to Equation~\ref{eqn:phatdef}. Furthermore, using the Debye model the stochastic ordinary differential equation (SODE) given by
+\begin{equation}
+\tau \frac{\delta \mathcal{P}}{\delta t} + \mathcal{P} = \tilde{\epsilon}_d E
+\label{eqn:sode}
+\end{equation}
+
+ Which is, forcing term aside, the same as Equation~\ref{eqn:spdef}. We can thus use a similar process to that described by Bela and Hortsch to apply polynomial chaos to Equation~\ref{eqn:spdef}. Applying this process to the ODE given in Equation~\ref{eqn:spdef} (using the same notation) we first rewrite $\mathcal{P}$ as an expansion of orthogonal polynomials
+\begin{equation}
+\mathcal{P}(\xi) = \sum_{i=0}^{\infty} \alpha_i (t) \phi_i (\xi)
+\end{equation}
+
+ Where $\phi_i (\xi)$ is an orthogonal basis with the property
+\begin{equation} 
+\int \phi_i \phi_j dW = \delta_{ij}
+\label{eqn:delta}
+\end{equation}
+where $\delta_{ij}$ represents the Kronecker delta function.
+
+In order for this to be helpful, need solution for $\alpha$. First, truncate the expansion to a (somewhat arbitrary, higher term means better approximation) value $Q$, giving
+\begin{equation}
+P_Q (\xi) = \sum_{i=0}^{Q} \alpha_i (t) \phi_i (\xi)
+\end{equation}
+
+Then we make the assumption that the ODE is satisfied by this approximation, e.g. 
+\begin{equation}
+\tau \dot{P}_Q + P_Q = \epsilon E
+\end{equation}
+
+Which can thus be rewritten as
+\begin{equation}
+\tau \left(\sum_{i=0}^{Q} \dot{\alpha}_i (t) \phi_i (\xi)\right) +
+\left( \sum_{i=0}^{Q} \alpha_i (t) \phi_i (\xi)\right) = \epsilon E
+\end{equation}
+Note that the only element in $P$ that possesses a derivative with respect to time $t$ is $\alpha_i$. Furthermore, using the definition of $\tau$ found in Equation~\ref{eqn:phatdef} as a uniform distribution with expected value $\mu = m$ and deviation $\sigma = r$, can rewrite our truncated ODE as
+\begin{equation}
+(r \xi + m)\left(\sum_{i=0}^{Q} \dot{\alpha}_i (t) \phi_i (\xi)\right) +
+\left( \sum_{i=0}^{Q} \alpha_i (t) \phi_i (\xi)\right) = \epsilon E
+\label{eqn:star}
+\end{equation}
+
+From here, find the Galerkin Projection in order to convert this continuous operator problem into a discrete problem by multiplying both sides of Equation~\ref{eqn:star} by $\phi_j$ and integrating
+\begin{equation}
+\int(r \xi + m)\left(\sum_{i=0}^{Q} \dot{\alpha}_i (t) \phi_i (\xi)\right) \phi_j W(\xi) d\xi +
+\int \left( \sum_{i=0}^{Q} \alpha_i (t) \phi_i (\xi)\right)\phi_j W(\xi) d\xi = \int \epsilon E \phi_j W(\xi) d\xi
+\end{equation}
+Using the definition for the Kronecker delta function in Equation~\ref{eqn:delta}, this can be rewritten as
+\begin{equation}
+\int(r \xi + m)\left(\sum_{i=0}^{Q} \dot{\alpha}_i (t) \phi_i (\xi)\right) \phi_j W(\xi) d\xi + 
+\sum_{i=0}^{Q} \alpha_i \delta{ij} = \int \epsilon E \delta_{0j}
+\end{equation}
+Although this is more compact, it is still not completely simplified. In order to simplify further, we can use the fact that $\alpha$ is not dependent on $\xi$, giving
+\begin{equation}
+\sum_{i=0}^{Q} \dot{\alpha}_i (t)\int(r \xi + m)\left( \phi_i (\xi)\right) \phi_j W(\xi) d\xi + 
+\sum_{i=0}^{Q} \alpha_i \delta{ij} = \int \epsilon E \delta_{0j}
+\end{equation}
+Then multiplying out $r$ and $m$ to separate terms
+\begin{equation}
+r\sum_{i=0}^{Q} \dot{\alpha}_i (t) \int \xi \phi_i (\xi) \phi_j (\xi) W(\xi) d\xi +  m \sum_{i=0}^{Q} \dot{\alpha}_i (t) \int \phi_i (\xi) \phi_j (\xi) W(\xi) d\xi + 
+\sum_{i=0}^{Q} \alpha_i \delta_{ij} = \int \epsilon E \delta_{0j}
+\end{equation}
+Giving a final form of
+\begin{equation}
+r\sum_{i=0}^{Q} \dot{\alpha}_i (t) \int \xi \phi_i (\xi) \phi_j (\xi) W(\xi) d\xi +  m \sum_{i=0}^{Q} \dot{\alpha}_i (t) \delta_{ij}+ 
+\sum_{i=0}^{Q} \alpha_i \delta_{ij} = \epsilon E
+\end{equation}
+With the integral dependent on the value of $j$, a system of equations is formed
+\begin{table}[H]
+\centering
+\begin{tabular}{c c}\toprule
+$j$-value	& Resulting Equation \\\midrule
+0			& $r (\gamma_0) + m \dot{\alpha}_0 + \alpha_0 = \epsilon E$\\
+1			& $r (\gamma_1) + m \dot{\alpha}_1 + \alpha_1 = 0$\\
+$\vdots$	& $\vdots$ \\
+$j$			& $\epsilon E \delta_{0j}$ \\
+			& $r\Gamma\dot{\vec{\alpha}} + mI\dot{\vec{\alpha}} + I \vec{\alpha} = \vec{f}$\\\bottomrule
+\end{tabular}
+\end{table}
+Where $\gamma_j$ is representative of the term
+\begin{equation}
+\sum_{i=0}^{Q} \dot{\alpha}_i (t) \int \xi \phi_i (\xi) \phi_j (\xi) W(\xi) d\xi
+\end{equation}
+And $\Gamma$ is the matrix composed of the individual $\gamma_j$ values. In order to reach a more meaningful definition of $\Gamma$, we can use the fact that all orthogonal polynomials have a recurrence relationship of the form
+\begin{equation}
+\xi \phi_n (\xi) = a_n \phi_{n+1} (\xi) + b_n \phi_n(\xi) + c_n\phi_{n-1}(\xi)
+\end{equation}
+Which allows reformulation of $\gamma_j$ as
+\begin{equation}
+\sum_{i=0}^{Q} \dot{\alpha}_i \int (a_n \phi_{n+1} (\xi) + b_n \phi_n(\xi) + c_n\phi_{n-1}(\xi))dW
+\end{equation}
+Integrating
+\begin{equation}
+\sum_{i=0}^{Q} \dot{\alpha}_i \left(a_i \delta_{i+1, j} + b_i \delta{i, j} + c_i \delta_{i-1, j} \right)
+\end{equation}
+Finally giving 
+\begin{equation}
+\Gamma = 
+\left[ \begin{array}{c c c c c}
+b_0		& c_1		& 0			& \cdots	& 0\\
+a_0		& b_1		& c_2		& 			& \ddots\\
+0		& \ddots	& \ddots	& \ddots	& 0\\
+\vdots	& 			& a_{Q-2}	& b_{Q-1}	& c_Q\\
+0		& \cdots	& 0			& a_{Q-1}	& b_Q
+\end{array} \right]
+\end{equation}
+
+Where $a_i$, $b_i$, and $c_i$ are the recursion coefficients, and $\vec{f}$ from earlier forces the system and has a deterministic value 
+\begin{equation}
+\vec{f} = \left(\begin{array}{c} \tilde{\epsilon} E\\ 0\\ \vdots\\0 \end{array}\right)
+\end{equation}
+\end{document}

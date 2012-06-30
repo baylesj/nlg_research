@@ -1,0 +1,9 @@
+
+
+Here is the repository for committing changes to source files for the gPC BPVE research project.
+
+Some notes:
+- Legacy files (read: not handled using new version control system) are included, however they
+are left untouched. In order to work on a legacy file, it is recommended to copy the latest version
+to the master folder and handle it with git versioning (i.e. remove ***vx* tag for primitive versions)
+

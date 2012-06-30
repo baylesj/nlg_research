@@ -1,0 +1,123 @@
+\documentclass[12pt,letterpaper]{article}
+
+\author{Jordan Bayles}
+\date{May 7th, 2012} % Necessary?
+\title{Numerical solutions implemented in determining values of $v$, $\dot{Q}$}
+
+%Usepackage declarations
+\usepackage[left=1in,top=1in,right=1in,bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{tgpagella}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{sectsty}
+\usepackage{slashed}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{latexsym}
+% Include for use of images
+\usepackage{graphicx}
+% Include for use of [H] placement specifier
+\usepackage{float}
+% Include for use of \toprule, \midrule, \bottomrule in tabular env.
+\usepackage{booktabs}
+% Include for setting spacing between lines
+\usepackage{setspace}
+%Package usages
+\sectionfont{\normalsize}
+\subsectionfont{\small}
+
+%New commands
+\newcommand{\comment}[1]{}
+\newcommand{\field}[1]{\mathbb{#1}} % requires amsfonts
+\newcommand{\pd}[2]{\frac{\partial#1}{\partial#2}}
+\newcommand{\script}[1]{\mathcal{#1}} % requires amsfonts, for clarity
+\begin{document}
+\maketitle
+
+\noindent In order to determine $v$, defined as
+% Double check this definition, I also have v = \kappa \pd{\sigma}{z}
+\begin{equation}
+v = \pd{u}{t}
+\end{equation}
+for use with an advection/diffusion model, we need to (1) characterize
+$\dot{\script{Q}}$, defined as
+\begin{equation}
+\script{Q} = \pd{\script{P}}{z}
+\end{equation}
+and then (2) use this characterization to solve for $v$. It was determined
+that a numerical solution should be used, specifically using finite difference equations.
+
+\section{Finding $\dot{\script{Q}}$}
+$\dot{\script{Q}}$
+can be determined using the forward difference approximation for first derivatives:
+\begin{equation}
+\dot{Q}_{n + \frac{1}{2}} = \frac{Q_{n+1} - Q_n}{\Delta t}
+\end{equation}
+Where $\script{Q}$ is determined also using a numerical method, specifically
+\begin{equation}
+\script{Q}_{n+1} = \script{Q}_n + \Delta t \frac{G_d}{\tau} Av
+\end{equation}
+where the update step is dependent upon $v$, and can be reformulated and written as
+\begin{equation}
+\script{Q}_{n+1} = \script{Q}_n + \frac{\Delta t \cdot G_d \cdot v_{zz}}{\tau} -
+\frac{\Delta t \script{Q}_n}{\tau}
+\end{equation}
+
+% Expand here
+
+\section{Finding $v_{zz}$}
+Due to the fact that $v$ and $\script{Q}$ are co-dependent (i.e. their values
+depend upon each other) they are thus solved simultaneously. The second order,
+center, finite difference approximation of $v_{zz}$ (read: $\pd{^2 v}{z^2}$) is
+simplified using the fact that $v$ represents a vector of length $M$ (the number
+of nodes approximated at). Using a diffusion coefficient $\gamma$, where
+\begin{equation}
+\gamma = \frac{\Delta t}{ (\Delta z)^2}
+\end{equation}
+and a tridiagonal matrix $A$ in order to take the center finite difference for the
+values in vector $v$, specifically of the form
+\begin{equation}
+A = \left[ \begin{array}{c c c c c c c }
+-2	& 1		& 0		& 0		& 0		& 0		& 0\\
+1	& -2	& 1		& 0		& 0		& 0		& 0\\
+0	& 1		& -2	& 1		& 0		& 0		& 0\\
+0	& 0		&\ddots	&\ddots	&\ddots	& 0		& 0\\
+0	& 0		& 0		&\ddots	&\ddots	&\ddots	& 0\\
+0	& 0		& 0		& 0		& 1		& -2	& 1\\
+0	& 0		& 0		& 0		& 0		& 1		& -2\\
+\end{array} \right]
+\end{equation}
+
+Then it follows simply that
+\begin{equation}
+\vec{v}_{zz} = A \vec{v}
+\end{equation}
+
+\section{Finding $v$}
+After a solution for $v_{zz}$ is determined, it can be used in determining the
+value of $v$ (as this is done numerically, this is \emph{iteratively} determined),
+specifically as
+\begin{equation}
+v_n = v_{n-1} + \kappa H_A G_{\infty} \cdot v_{zz} + \Delta t \cdot \kappa H_A 
+\dot{\script{Q}}
+\end{equation}
+
+\section{Ignore past here}
+% We currently are not utilizing this, as j iterates over the empty set.
+$v$ is also solved using finite difference, however this is done using a second
+order central difference approximation, defined as
+\begin{equation}
+f'' (x) = \frac{f(x+h) - 2 \cdot f(x) + f(x-h)}{h^2}
+\end{equation}
+Specifically of the form
+\begin{equation}
+v_n (j) = v_{n-1}(j) + D \gamma \left(v_{n-1}(j+1)- 2 \cdot v_{n-1}(j) + 
+v_{n-1}(j-1) \right) + \Delta t \kappa \dot{\script{Q}}(j)
+\end{equation}
+
+Although it may appear that we are missing the $h^2$ term, due to the fact that
+$h=1$, this is simply $h^2 = 1$, which is not necessary to include.
+\end{document}
